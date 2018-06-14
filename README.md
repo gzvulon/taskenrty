@@ -1,4 +1,6 @@
-## Taskfile: Make-like Entrypoints
+Taskfile: Make-like Entrypoints
+===============================
+
 The entrypoints are placed into [Taskfile](Taskfile.yml)
 wich are processed by [task](https://github.com/go-task/task).
 
@@ -21,6 +23,7 @@ simple ansible-like dsl.
 Usage
 -----
 try: `task --list` to see available tasks
+
 
 Advantages
 ----------
