@@ -97,5 +97,16 @@ class Resizer:
 
         for t in [self._pt, self._st]:
             t.join()
-
-
+#
+# DEF_DEST = '/Users/ivanne/mldb/thumbs'
+# # fiter = iter_files(
+# #     root_dir='/Users/ivanne/mlg_index/',
+# #     pattern='*.jpg.json')
+# DEF_FITER = ('/Users/ivanne/mlg_index/', '*.jpg.json')
+#
+#
+# def make_thumbs_old(dest=DEF_DEST, fiter=DEF_FITER):
+#     desc_p = Path(dest)
+#     desc_p.mkdir(parents=True, exist_ok=True)
+#     for fpath in fiter:
+#         resize_func(fpath, desc_p)

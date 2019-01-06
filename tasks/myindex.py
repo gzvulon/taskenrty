@@ -151,6 +151,13 @@ def test_make_thumbs_new(nproc):
     make_thumbs_new(nproc=nproc)
 
 
+import pytest
+@pytest.mark.parametrize("nproc", [1, 2, 3, 4, 5, 6, 7, 8])
+def test_make_thumbs_fast(nproc):
+    logging.basicConfig(level=logging.INFO)
+    make_thumbs_fast(nproc=nproc)
+
+
 def make_thumbs_new(dest='/Users/ivanne/mldb/thumbs', nproc=4):
     nproc = os.getenv('PY_NPROC', nproc)
     desc_p = Path(dest)
@@ -203,6 +210,7 @@ def make_thumbs_fast(dest='/Users/ivanne/mldb/thumbs', nproc=4):
     for p in ps:
         p.join()
 
+
 def make_thumbs_old(dest='/Users/ivanne/mldb/thumbs'):
     desc_p = Path(dest)
     desc_p.mkdir(parents=True, exist_ok=True)
@@ -211,6 +219,7 @@ def make_thumbs_old(dest='/Users/ivanne/mldb/thumbs'):
         pattern='*.jpg.json')
     for fpath in fiter:
         resize_func(fpath, desc_p)
+
 
 from multiprocessing import Pool
 
