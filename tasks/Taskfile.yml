@@ -1,0 +1,28 @@
+# https://taskfile.org
+
+version: '2'
+
+vars:
+  GREETING: Data Tsks
+
+tasks:
+  default:
+    cmds:
+      - echo "{{.GREETING}}"
+      - task -l
+    silent: true
+
+  index-disc:
+    desc: _
+    cmds:
+      - python myindex.py index_files
+
+  index-to-mongo:
+    desc: _
+    cmds:
+      - python myindex.py index_to_mongo
+
+  mongo-update:
+    desc: _
+    cmds:
+      - python myindex.py mongo-update
