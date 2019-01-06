@@ -22,6 +22,13 @@ class FileRef(ModelBase):
     uri: str = SmartField()
     ref_uri = SmartField()
     hostname = SmartField()
+
+    @property
+    def safe_uri(self):
+        uri = self.uri
+        if uri.startswith('file://'):
+            uri = uri[len('file://'):]
+        return uri
     # props = SmartField()
 
 # def iter_files(path='/Users/ivanne', pattern='*.jpg'):
@@ -100,6 +107,114 @@ def show(finder='jpg', method=print):
     # fiter = iter_files(*params)
     for fpath in fiter:
         method(fpath)
+from mkthumb import resize_pad, resize_img, Resizer
+
+
+def resize_func(fpath, dest='/Users/ivanne/mldb/thumbs'):
+        desc_p = Path(dest)
+        ref_content = FileRef.from_json(fpath)
+        dst_name = str(ref_content.safe_uri).replace('/','@')
+        dest_path = str(desc_p / dst_name)
+        resize_pad(256,
+                   ref_content.safe_uri,
+                   dest_path)
+        print(f"Resized {dest_path}")
+
+def resize_proc(q, dest='/Users/ivanne/mldb/thumbs'):
+    while True:
+        item = q.get()
+        if item == '__exit__':
+            break
+        resize_func(item, dest)
+
+def resize_proc_fast(q, dest='/Users/ivanne/mldb/thumbs'):
+    resizer = Resizer(q, dest_p=dest)
+    resizer.start()
+
+import queue
+
+import pytest
+@pytest.mark.parametrize("use_threads", [True, False])
+@pytest.mark.parametrize("nproc", [1, 2, 3, 4, 5, 6, 7, 8])
+def test_foo(use_threads, nproc):
+    logging.basicConfig(level=logging.INFO)
+    if use_threads:
+        make_thumbs_fast(nproc=nproc)
+    else:
+        make_thumbs(nproc=nproc)
+
+
+import pytest
+@pytest.mark.parametrize("nproc", [1, 2, 3, 4, 5, 6, 7, 8])
+def test_make_thumbs_new(nproc):
+    logging.basicConfig(level=logging.INFO)
+    make_thumbs_new(nproc=nproc)
+
+
+def make_thumbs_new(dest='/Users/ivanne/mldb/thumbs', nproc=4):
+    nproc = os.getenv('PY_NPROC', nproc)
+    desc_p = Path(dest)
+    desc_p.mkdir(parents=True, exist_ok=True)
+    fiter = iter_files(
+        root_dir = '/Users/ivanne/mlg_index/',
+        pattern='*.jpg.json')
+    with Pool(nproc) as p:
+        p.map(resize_func, fiter)
+
+
+import multiprocessing as mp
+import os
+def make_thumbs(dest='/Users/ivanne/mldb/thumbs', nproc=4):
+    q = mp.Queue()
+    nproc = os.getenv('PY_NPROC', nproc)
+    desc_p = Path(dest)
+    desc_p.mkdir(parents=True, exist_ok=True)
+    ps = [mp.Process(target=resize_proc, args=(q,dest)) for _ in range(nproc)]
+    [p.start() for p in ps]
+    fiter = iter_files(
+        root_dir = '/Users/ivanne/mlg_index/',
+        pattern='*.jpg.json')
+    for fpath in fiter:
+        q.put(fpath)
+    for p in ps:
+        q.put('__exit__')
+        q.put('__exit__')
+    for p in ps:
+        p.join()
+
+
+def make_thumbs_fast(dest='/Users/ivanne/mldb/thumbs', nproc=4):
+    # python myindex.py make_thumbs  76.86s user 5.98s system 102% cpu 1:20.47 total
+    q = mp.Queue()
+    nproc = os.getenv('PY_NPROC', nproc)
+    desc_p = Path(dest)
+    desc_p.mkdir(parents=True, exist_ok=True)
+    ps = [mp.Process(target=resize_proc_fast, args=(q,dest)) for _ in range(nproc)]
+    [p.start() for p in ps]
+    fiter = iter_files(
+        root_dir = '/Users/ivanne/mlg_index/',
+        pattern='*.jpg.json')
+    for fpath in fiter:
+        ref_content = FileRef.from_json(fpath)
+        q.put(ref_content.safe_uri)
+    for p in ps:
+        q.put('__exit__')
+        q.put('__exit__')
+    for p in ps:
+        p.join()
+
+def make_thumbs_old(dest='/Users/ivanne/mldb/thumbs'):
+    desc_p = Path(dest)
+    desc_p.mkdir(parents=True, exist_ok=True)
+    fiter = iter_files(
+        root_dir = '/Users/ivanne/mlg_index/',
+        pattern='*.jpg.json')
+    for fpath in fiter:
+        resize_func(fpath, desc_p)
+
+from multiprocessing import Pool
+
+
 
 
 def index_to_mongo():
@@ -305,13 +420,18 @@ def update_info(stages=DEFAULT_STAGES):
     print(f"Proceessed {count}. OK: {count - errors}. FAILED: {errors}")
     print(f"Errors {errors_d}")
 
+# python myindex.py make_thumbs --nproc=1  77.97s user 6.69s system 97% cpu 1:27.21 total
+# python myindex.py make_thumbs_fast --nproc=1  78.76s user 7.11s system 100% cpu 1:25.15 total
 
 
-if __name__ == "__main__":
-    # df = {
-    #     index_files.__name__: index_files
-    # }
-    logging.basicConfig(level=logging.INFO)
-    fire.Fire()
+
+#
+# if __name__ == "__main__":
+#     # df = {
+#     #     index_files.__name__: index_files
+#     # }
+#     logging.basicConfig(level=logging.INFO)
+#     # make_thumbs_fast()
+#     fire.Fire()
 
 
