@@ -1,0 +1,30 @@
+# https://taskfile.org
+
+version: '2'
+
+vars:
+  GREETING: Services
+
+tasks:
+  default:
+    cmds:
+      - echo "{{.GREETING}}"
+      - task -l
+    silent: true
+
+  init-mongo:
+    # https://www.thachmai.info/2015/04/30/running-mongodb-container/
+    desc: _
+    cmds:
+      - mkdir -p ~/dock/mongo/data
+      - docker run -d -p 27017:27017 -v ~/dock/mongo/data:/data/db mongo
+
+  install-mongo-clients:
+    desc:
+    cmds:
+     - sudo apt-get install mongodb-clients
+
+  pip-install-refstore:
+    desc: _
+    cmds:
+      - pip install git+://git@bitbucket.org:uveyeinc/mlcmn.git#subdirectory=libs/refstore
