@@ -1,6 +1,9 @@
 # github.com/go-task/task
 version: '2'
 
+include:
+  services: ./services
+
 vars:
   GREETING: Sample Usage for custom pypi
 

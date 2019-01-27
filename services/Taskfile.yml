@@ -27,7 +27,7 @@ tasks:
   pip-install-refstore:
     desc: _
     cmds:
-      - pip install git+://git@bitbucket.org:uveyeinc/mlcmn.git#subdirectory=libs/refstore
+      - pip install -e git+ssh://git@bitbucket.org:uveyeinc/mlcmn.git#subdirectory=libs/refstore
   init-elk:
     desc: _
     cmds:
