@@ -225,7 +225,7 @@ from multiprocessing import Pool
 
 
 
-
+@jen.job("IndexToMongo", cron='every minute')
 def index_to_mongo():
     from pymongo import MongoClient
     client = MongoClient('mongodb://localhost:27017/')
