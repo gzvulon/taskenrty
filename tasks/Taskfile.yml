@@ -18,6 +18,9 @@ tasks:
       - python myindex.py index_files
 
   index-to-mongo:
+    job:
+      name: IndexMyPics
+      cron: every minute
     desc: _
     cmds:
       - python myindex.py index_to_mongo
